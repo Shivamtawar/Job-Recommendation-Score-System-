@@ -13,59 +13,39 @@
         }
 
         body {
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow-x: hidden;
+            padding: 32px 20px;
+            color: #2c3e50;
+            line-height: 1.6;
         }
 
-        /* Animated background particles */
-        .particles {
-            position: absolute;
+        /* Royal gradient pattern */
+        body::before {
+            content: '';
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(147, 51, 234, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(79, 70, 229, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
+            z-index: -1;
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 24px;
-            padding: 60px 50px;
-            max-width: 600px;
-            width: 90%;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-            position: relative;
-            z-index: 2;
-            animation: slideUp 0.8s ease-out;
+            max-width: 800px;
+            margin: 0 auto;
+            animation: slideUp 0.6s ease-out;
         }
 
         @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(50px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -76,40 +56,69 @@
         .header {
             text-align: center;
             margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 40px 32px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
 
         .header h1 {
-            color: white;
-            font-size: 2.5rem;
+            color: #1f2937;
+            font-size: 2.25rem;
             font-weight: 700;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #fff 0%, #e0e7ff 100%);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .header h1 i {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .header p {
-            color: rgba(255, 255, 255, 0.8);
+            color: #6b7280;
             font-size: 1.1rem;
-            font-weight: 300;
+            margin-bottom: 8px;
         }
 
         .upload-section {
-            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 32px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
 
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 28px;
             position: relative;
         }
 
         .form-group label {
             display: block;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 600;
-            margin-bottom: 10px;
-            font-size: 1rem;
+            color: #374151;
+            font-weight: 500;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group label i {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .file-upload {
@@ -130,62 +139,153 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px dashed rgba(255, 255, 255, 0.3);
+            padding: 24px;
+            background: rgba(102, 126, 234, 0.02);
+            border: 2px dashed rgba(102, 126, 234, 0.3);
             border-radius: 16px;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 1rem;
+            color: #6b7280;
+            font-size: 0.95rem;
             transition: all 0.3s ease;
             cursor: pointer;
         }
 
         .file-upload-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(102, 126, 234, 0.05);
+            border-color: rgba(102, 126, 234, 0.5);
+            color: #374151;
             transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
         }
 
         .file-upload-btn i {
             margin-right: 10px;
             font-size: 1.2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .file-selected {
-            background: rgba(34, 197, 94, 0.2);
-            border-color: rgba(34, 197, 94, 0.5);
-            color: #22c55e;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-color: #667eea;
+            color: #4c1d95;
+        }
+
+        .file-selected i {
+            color: #667eea;
+            background: none;
+            -webkit-text-fill-color: #667eea;
+        }
+
+        .document-preview {
+            margin-top: 20px;
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 16px;
+        }
+
+        .preview-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4c1d95;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preview-title::before {
+            content: '📄';
+            font-size: 1.1rem;
+        }
+
+        .preview-close {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .preview-close:hover {
+            background: rgba(102, 126, 234, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .preview-content {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #374151;
+            white-space: pre-wrap;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+        }
+
+        .preview-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .preview-loading i {
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
         }
 
         textarea {
             width: 100%;
-            min-height: 180px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            color: white;
-            font-size: 1rem;
+            min-height: 160px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(209, 213, 219, 0.5);
+            border-radius: 12px;
+            color: #374151;
+            font-size: 0.95rem;
             line-height: 1.6;
             resize: vertical;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            font-family: inherit;
         }
 
         textarea::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: #9ca3af;
         }
 
         textarea:focus {
             outline: none;
-            border-color: rgba(255, 255, 255, 0.4);
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: rgba(255, 255, 255, 0.9);
         }
 
         .submit-btn {
             width: 100%;
-            padding: 18px;
+            padding: 18px 32px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 16px;
@@ -194,11 +294,12 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
             position: relative;
             overflow: hidden;
         }
 
-        .submit-btn:before {
+        .submit-btn::before {
             content: '';
             position: absolute;
             top: 0;
@@ -209,17 +310,28 @@
             transition: left 0.5s;
         }
 
-        .submit-btn:hover:before {
+        .submit-btn:hover::before {
             left: 100%;
         }
 
         .submit-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
         }
 
         .submit-btn:active {
             transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .submit-btn:disabled::before {
+            display: none;
         }
 
         .loading {
@@ -228,8 +340,8 @@
         }
 
         .spinner {
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-top: 2px solid white;
             border-radius: 50%;
@@ -242,152 +354,231 @@
         }
 
         .features {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
-            gap: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
         }
 
         .feature {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 24px;
             text-align: center;
-            flex: 1;
+            transition: all 0.3s ease;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(102, 126, 234, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.2);
         }
 
         .feature i {
-            color: rgba(255, 255, 255, 0.8);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             font-size: 2rem;
-            margin-bottom: 10px;
+            margin-bottom: 16px;
+            display: block;
         }
 
         .feature h3 {
-            color: white;
-            font-size: 0.9rem;
+            color: #1f2937;
+            font-size: 1rem;
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .feature p {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.8rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+            line-height: 1.5;
         }
 
         @media (max-width: 768px) {
             .container {
-                padding: 40px 30px;
+                padding: 0 10px;
             }
             
             .header h1 {
                 font-size: 2rem;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .upload-section, .header {
+                margin-left: -10px;
+                margin-right: -10px;
             }
             
             .features {
-                flex-direction: column;
-                gap: 15px;
+                grid-template-columns: 1fr;
+                gap: 16px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="particles">
-        <!-- Particles will be generated by JavaScript -->
-    </div>
-
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-robot"></i> AI Resume Matcher</h1>
-            <p>Intelligent matching powered by advanced NLP algorithms</p>
+            <h1><i class="fas fa-brain"></i> AI Resume Matcher</h1>
+            <p>Intelligent resume analysis powered by AI</p>
         </div>
 
-        <form action="/result" method="post" enctype="multipart/form-data" id="matchForm">
-            <div class="form-group">
-                <label for="resume">
-                    <i class="fas fa-file-user"></i> Upload Resume
-                </label>
-                <div class="file-upload">
-                    <input type="file" name="resume" id="resume" accept=".txt,.pdf,.docx" required>
-                    <div class="file-upload-btn" id="fileBtn">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <span>Choose file (PDF, DOCX, TXT)</span>
+        <div class="upload-section">
+            <form action="/result" method="post" enctype="multipart/form-data" id="matchForm">
+                <div class="form-group">
+                    <label for="resume">
+                        <i class="fas fa-file-user"></i> Upload Resume
+                    </label>
+                    <div class="file-upload">
+                        <input type="file" name="resume" id="resume" accept=".txt,.pdf,.docx" required>
+                        <div class="file-upload-btn" id="fileBtn">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Choose resume file (PDF, DOCX, TXT)</span>
+                        </div>
+                    </div>
+                    <div class="document-preview" id="documentPreview">
+                        <div class="preview-header">
+                            <div class="preview-title" id="previewTitle">Document Preview</div>
+                            <button type="button" class="preview-close" onclick="closePreview()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="preview-content" id="previewContent">
+                            <div class="preview-loading">
+                                <i class="fas fa-spinner"></i>
+                                Loading document...
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label for="jd">
-                    <i class="fas fa-briefcase"></i> Job Description
-                </label>
-                <textarea 
-                    name="jd" 
-                    id="jd" 
-                    placeholder="Paste the complete job description here...
+                <div class="form-group">
+                    <label for="jd">
+                        <i class="fas fa-briefcase"></i> Job Description
+                    </label>
+                    <textarea 
+                        name="jd" 
+                        id="jd" 
+                        placeholder="Paste the complete job description here...
 
 Example:
 Role: Senior Software Engineer
 Required:
-- 5+ years experience
-- React, Node.js, Python
-- Bachelor's in Computer Science or related field"
-                    required
-                ></textarea>
-            </div>
+• 5+ years experience in software development
+• Proficiency in React, Node.js, Python
+• Bachelor's degree in Computer Science or related field
+• Experience with cloud platforms (AWS/Azure)
+• Strong problem-solving and communication skills"
+                        required
+                    ></textarea>
+                </div>
 
-            <button type="submit" class="submit-btn" id="submitBtn">
-                <i class="fas fa-magic"></i> Analyze Match
-                <span class="loading">
-                    <div class="spinner"></div>
-                </span>
-            </button>
-        </form>
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <i class="fas fa-search"></i> Analyze Match
+                    <span class="loading">
+                        <div class="spinner"></div>
+                    </span>
+                </button>
+            </form>
+        </div>
 
         <div class="features">
             <div class="feature">
-                <i class="fas fa-brain"></i>
-                <h3>AI-Powered</h3>
-                <p>Advanced semantic analysis</p>
+                <i class="fas fa-robot"></i>
+                <h3>AI-Powered Analysis</h3>
+                <p>Advanced machine learning algorithms analyze your resume against job requirements</p>
             </div>
             <div class="feature">
-                <i class="fas fa-chart-line"></i>
-                <h3>Detailed Scores</h3>
-                <p>Skills, experience & education</p>
+                <i class="fas fa-chart-pie"></i>
+                <h3>Detailed Scoring</h3>
+                <p>Get comprehensive scores for skills, experience, and education alignment</p>
             </div>
             <div class="feature">
-                <i class="fas fa-rocket"></i>
-                <h3>Instant Results</h3>
-                <p>Fast & accurate matching</p>
+                <i class="fas fa-lightbulb"></i>
+                <h3>Smart Insights</h3>
+                <p>Receive actionable recommendations to improve your resume match</p>
             </div>
         </div>
     </div>
 
     <script>
-        // Create floating particles
-        function createParticles() {
-            const particlesContainer = document.querySelector('.particles');
-            const particleCount = 50;
-
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 6 + 's';
-                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
-                particlesContainer.appendChild(particle);
-            }
-        }
-
-        // File upload handler
+        // File upload and preview handler
         document.getElementById('resume').addEventListener('change', function(e) {
             const fileBtn = document.getElementById('fileBtn');
-            const fileName = e.target.files[0]?.name;
+            const preview = document.getElementById('documentPreview');
+            const previewContent = document.getElementById('previewContent');
+            const previewTitle = document.getElementById('previewTitle');
+            const file = e.target.files[0];
             
-            if (fileName) {
-                fileBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${fileName}`;
+            if (file) {
+                fileBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${file.name}`;
                 fileBtn.classList.add('file-selected');
+                
+                // Show preview
+                preview.style.display = 'block';
+                previewTitle.textContent = `Preview: ${file.name}`;
+                previewContent.innerHTML = `
+                    <div class="preview-loading">
+                        <i class="fas fa-spinner"></i>
+                        Loading document...
+                    </div>
+                `;
+                
+                // Read file content
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    let content = '';
+                    
+                    if (file.type === 'text/plain') {
+                        content = event.target.result;
+                    } else if (file.type === 'application/pdf') {
+                        content = 'PDF content preview is not available. The file has been uploaded successfully and will be processed during analysis.';
+                    } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                        content = 'DOCX content preview is not available. The file has been uploaded successfully and will be processed during analysis.';
+                    } else {
+                        content = 'File type not supported for preview, but will be processed during analysis.';
+                    }
+                    
+                    // Truncate content if too long
+                    if (content.length > 1000) {
+                        content = content.substring(0, 1000) + '\n\n... (content truncated for preview)';
+                    }
+                    
+                    previewContent.textContent = content;
+                };
+                
+                if (file.type === 'text/plain') {
+                    reader.readAsText(file);
+                } else {
+                    // For non-text files, show a message
+                    setTimeout(() => {
+                        let message = '';
+                        if (file.type === 'application/pdf') {
+                            message = `PDF document uploaded successfully.\n\nFilename: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\n\nThis PDF will be processed during analysis to extract text content for matching.`;
+                        } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                            message = `Word document uploaded successfully.\n\nFilename: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\n\nThis DOCX file will be processed during analysis to extract text content for matching.`;
+                        } else {
+                            message = `Document uploaded successfully.\n\nFilename: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\n\nThis file will be processed during analysis.`;
+                        }
+                        previewContent.textContent = message;
+                    }, 500);
+                }
             } else {
-                fileBtn.innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Choose file (PDF, DOCX, TXT)`;
+                fileBtn.innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Choose resume file (PDF, DOCX, TXT)`;
                 fileBtn.classList.remove('file-selected');
+                preview.style.display = 'none';
             }
         });
+
+        function closePreview() {
+            document.getElementById('documentPreview').style.display = 'none';
+        }
 
         // Form submission handler
         document.getElementById('matchForm').addEventListener('submit', function(e) {
@@ -395,12 +586,9 @@ Required:
             const loading = submitBtn.querySelector('.loading');
             
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-cog fa-spin"></i> Processing... <span class="loading"><div class="spinner"></div></span>';
+            submitBtn.innerHTML = '<i class="fas fa-cog fa-spin"></i> Processing Analysis... <span class="loading"><div class="spinner"></div></span>';
             loading.style.display = 'inline-block';
         });
-
-        // Initialize particles when page loads
-        window.addEventListener('load', createParticles);
     </script>
 </body>
 </html>
