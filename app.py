@@ -9,7 +9,6 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
-# Download required NLTK data
 try:
     nltk.data.find('tokenizers/punkt')
 except LookupError:
@@ -20,7 +19,6 @@ try:
 except LookupError:
     nltk.download('stopwords')
 
-# Try to load spacy model, fallback if not available
 try:
     import spacy
     nlp = spacy.load("en_core_web_sm")
@@ -30,11 +28,9 @@ except (OSError, ImportError):
 
 app = Flask(__name__)
 
-# Load pre-trained model
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def extract_text_from_file(file_path):
-    """Extract text from various file formats"""
     if file_path.endswith('.txt'):
         with open(file_path, 'r', encoding='utf-8') as f:
             return f.read()
@@ -47,34 +43,29 @@ def extract_text_from_file(file_path):
         raise ValueError("Unsupported file format")
 
 def extract_name(text):
-    """Improved name extraction from resume text"""
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     
-    # Look for name in first few lines - improved patterns
     for i, line in enumerate(lines[:10]):
-        # Skip empty lines and very short lines
         if len(line) < 3:
             continue
             
-        # Skip common headers and sections
         skip_patterns = [
             r'^(resume|cv|curriculum|vitae|profile|summary|objective|contact)',
             r'^(experience|education|skills|projects|achievements)',
             r'^(email|phone|address|linkedin|github)',
-            r'@.*\.(com|org|in|net)',  # Email patterns
-            r'^\+?\d[\d\s\-\(\)]+$',   # Phone patterns
-            r'^https?://',              # URL patterns
-            r'^\d+\s',                  # Lines starting with numbers
+            r'@.*\.(com|org|in|net)',
+            r'^\+?\d[\d\s\-\(\)]+$',
+            r'^https?://',
+            r'^\d+\s',
         ]
         
         if any(re.search(pattern, line, re.IGNORECASE) for pattern in skip_patterns):
             continue
         
-        # Look for typical name patterns
         name_patterns = [
-            r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})$',  # First Last [Middle] [Title]
-            r'^([A-Z][a-z]+\s+[A-Z]\.\s*[A-Z][a-z]+)$',  # First M. Last
-            r'^([A-Z][A-Z\s]{2,30})$',  # ALL CAPS names (but not too long)
+            r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})$',
+            r'^([A-Z][a-z]+\s+[A-Z]\.\s*[A-Z][a-z]+)$',
+            r'^([A-Z][A-Z\s]{2,30})$',
         ]
         
         for pattern in name_patterns:
@@ -82,34 +73,29 @@ def extract_name(text):
             if match:
                 name_candidate = match.group(1).strip()
                 
-                # Additional validation
                 words = name_candidate.split()
                 if (len(words) >= 2 and len(words) <= 4 and 
                     all(len(word) > 1 for word in words) and
                     not any(word.lower() in ['engineer', 'developer', 'manager', 'lead', 'senior'] for word in words)):
                     return name_candidate
     
-    # Try NER with spacy if available
     if nlp:
-        doc = nlp(text[:1000])  # First 1000 chars
+        doc = nlp(text[:1000])
         for ent in doc.ents:
             if ent.label_ == "PERSON":
                 name_parts = ent.text.split()
                 if len(name_parts) >= 2 and len(name_parts) <= 4:
-                    # Check if it's likely a real person name
                     if all(len(part) > 1 and part[0].isupper() for part in name_parts):
                         return ent.text
     
     return "Unknown Candidate"
 
 def extract_experience(text):
-    """Improved experience extraction from resume text"""
     experience_data = {
         'experience_list': [],
         'experience_years': 0
     }
     
-    # Enhanced patterns for years of experience - specifically looking for Ajay's format
     experience_patterns = [
         r'with\s+over\s+(\d+(?:\.\d+)?)\s*years?\s*of\s*(?:ex|experience)',
         r'(?:over\s+)?(\d+(?:\.\d+)?)\s*years?\s*of\s*(?:professional\s*)?experience',
@@ -119,20 +105,17 @@ def extract_experience(text):
         r'Engineer.*?with.*?(\d+(?:\.\d+)?)\s*years?\s*of\s*(?:ex|experience)',
     ]
     
-    # First try to find explicit experience statements
     for pattern in experience_patterns:
         matches = re.findall(pattern, text, re.IGNORECASE | re.MULTILINE | re.DOTALL)
         for match in matches:
             try:
                 years = float(match)
-                if 0 < years <= 50:  # Reasonable range
+                if 0 < years <= 50:
                     experience_data['experience_years'] = max(experience_data['experience_years'], years)
             except ValueError:
                 continue
     
-    # If no explicit experience found, calculate from work history dates
     if experience_data['experience_years'] == 0:
-        # Look for date ranges - including the specific format in Ajay's resume
         date_patterns = [
             r'((?:Present|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*\d{4})\s*↑\s*((?:Present|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*\d{4})',
             r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*\d{4})\s*[-–—↑to]\s*((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*\d{4}|Present|Current)',
@@ -147,7 +130,6 @@ def extract_experience(text):
             matches = re.findall(pattern, text, re.IGNORECASE)
             for start_date, end_date in matches:
                 try:
-                    # Extract year from start date
                     start_year_match = re.search(r'(\d{4})', start_date)
                     if start_year_match:
                         start_year = int(start_year_match.group(1))
@@ -163,7 +145,7 @@ def extract_experience(text):
                         
                         if start_year <= end_year <= current_year and start_year >= 2000:
                             years_worked = end_year - start_year
-                            if years_worked > 0:  # Only add positive years
+                            if years_worked > 0:
                                 total_experience += years_worked
                 except Exception:
                     continue
@@ -174,53 +156,37 @@ def extract_experience(text):
     return experience_data
 
 def extract_skills(text):
-    """Improved skills extraction from resume text"""
     skills = set()
     
-    # Enhanced technology patterns - more specific for Ajay's resume
     tech_patterns = [
-        # Programming Languages
         r'\b(Python|Java|JavaScript|TypeScript|C\+\+|C#|PHP|Ruby|Go|Rust|Swift|Kotlin|Scala|R)\b',
-        # AI/ML Frameworks and Libraries
         r'\b(TensorFlow|PyTorch|Keras|Scikit-learn|sklearn|Pandas|NumPy|Matplotlib|Seaborn)\b',
         r'\b(Hugging\s*Face|Transformers|BERT|RoBERTa|GPT|LLM|LangChain|LangGraph)\b',
         r'\b(OpenAI|Anthropic|Llama|Mistral|Claude|CrewAI|Autogen)\b',
-        # Machine Learning Techniques
         r'\b(Machine\s*Learning|Deep\s*Learning|Neural\s*Networks|NLP|Computer\s*Vision)\b',
         r'\b(Classification|Regression|Clustering|Reinforcement\s*Learning|RLHF|DPO|QLORA)\b',
         r'\b(Recommender\s*Systems|RAG|Retrieval\s*Augmented\s*Generation)\b',
-        # Cloud Platforms and specific services
         r'\b(AWS|Azure|GCP|Google\s*Cloud|Amazon\s*Web\s*Services)\b',
         r'\b(SageMaker|Sagemakers|Azure\s*ML|Vertex\s*AI|Databricks|Runpod)\b',
         r'\b(AWS\s*Glue|Glue)\b',
-        # Databases
         r'\b(MySQL|PostgreSQL|Postgres|MongoDB|Redis|Elasticsearch|Neo4j|Cassandra)\b',
         r'\b(Vector\s*Database|FAISS|Pinecone|Weaviate)\b',
-        # Web Frameworks
         r'\b(Flask|FastAPI|Django|Express|React|Angular|Vue|Node\.js)\b',
-        # DevOps Tools
         r'\b(Docker|Kubernetes|Jenkins|Git|GitHub|GitLab|CI/CD)\b',
-        # Data Processing
         r'\b(Spark|Kafka|Airflow|ETL|Data\s*Pipeline)\b',
-        # Visualization
         r'\b(Tableau|Power\s*BI|D3\.js|Plotly|Streamlit)\b',
-        # Computer Vision specific
         r'\b(OpenCV|YOLO|SAM2|opencv)\b',
-        # Specific tools from Ajay's resume
         r'\b(llamaindex|Dspy|GraphRAG|Phi\s*data)\b',
     ]
     
-    # Extract using patterns
     for pattern in tech_patterns:
         matches = re.findall(pattern, text, re.IGNORECASE)
         for match in matches:
             if isinstance(match, str) and len(match.strip()) > 1:
                 cleaned_skill = match.strip()
-                # Filter out common non-technical words that might match
                 if not any(word in cleaned_skill.lower() for word in ['fitness', 'gaming', 'english', 'hindi', 'fluent']):
                     skills.add(cleaned_skill)
     
-    # Look for structured skills sections - handle Ajay's specific format with bullet points
     skills_section_patterns = [
         r'languages\s*[:\n](.*?)(?=Libraries|$)',
         r'Libraries\s*[:\n](.*?)(?=Cloud|$)',  
@@ -235,45 +201,37 @@ def extract_skills(text):
         if match:
             skills_section = match.group(1)
             
-            # Extract skills from bullet points
             bullet_skills = re.findall(r'○\s*([^○\n]+)', skills_section)
             for skill_line in bullet_skills:
-                # Skip personal skills and hobbies
                 if any(word in skill_line.lower() for word in ['fitness', 'gaming', 'football', 'bike', 'gym', 'communication', 'teamwork', 'english', 'hindi', 'fluent']):
                     continue
                 
-                # Split by commas and clean
                 individual_skills = [s.strip() for s in skill_line.split(',') if s.strip()]
                 for skill in individual_skills:
                     if len(skill) > 1 and len(skill) < 40:
                         skills.add(skill)
     
-    # Also extract from work experience descriptions for context
     work_skills = re.findall(r'\b(LangGraph|langchain|RAG|LLM|QLORA|DPO|Autogen|CrewAI|OpenAI|Hugging\s*Face|AWS\s*Glue|Sagemakers|OCR|BERT|RoBERTa|YOLO|SAM2)\b', text, re.IGNORECASE)
     for skill in work_skills:
         if skill.strip():
             skills.add(skill.strip())
     
-    # Clean final skills list
     cleaned_skills = []
     for skill in skills:
         skill = skill.strip()
-        # Final filter to remove non-technical terms
         if (skill and len(skill) > 1 and len(skill) < 40 and
             not any(word in skill.lower() for word in ['fitness', 'gaming', 'football', 'bike', 'gym', 
                                                        'communication', 'teamwork', 'management', 'solving',
                                                        'english', 'hindi', 'fluent', 'riding'])):
             cleaned_skills.append(skill)
     
-    return list(set(cleaned_skills))[:25]  # Remove duplicates and limit to top 25 skills
+    return list(set(cleaned_skills))[:25]
 
 def extract_education(text):
-    """Improved education extraction from resume text"""
     education_patterns = [
         r'Education\s*[:\n]\s*(.*?)(?=\n\s*(?:Experience|Skills|Projects|Achievements|Contact)\s*[:|\n]|$)',
         r'Academic\s+Background\s*[:\n]\s*(.*?)(?=\n\s*(?:Experience|Skills|Projects|Achievements|Contact)\s*[:|\n]|$)',
         r'Qualifications?\s*[:\n]\s*(.*?)(?=\n\s*(?:Experience|Skills|Projects|Achievements|Contact)\s*[:|\n]|$)',
-        # Specific degree patterns
         r'\b(Bachelor(?:\s+of\s+Technology)?|B\.?Tech|Master(?:\s+of\s+Technology)?|M\.?Tech|PhD|Doctorate)\b[^\n]{0,100}',
         r'\b(B\.?E\.?|M\.?E\.?|B\.?S\.?c|M\.?S\.?c|BCA|MCA|MBA)\b[^\n]{0,100}',
     ]
@@ -287,7 +245,6 @@ def extract_education(text):
     return education_info.strip()
 
 def parse_resume(file_path):
-    """Enhanced resume parsing function"""
     text = extract_text_from_file(file_path)
     
     name = extract_name(text)
@@ -303,10 +260,7 @@ def parse_resume(file_path):
         'education': education
     }
 
-def parse_jd(jd_text):
-    """Improved job description parsing"""
-    
-    # Extract job title - improved patterns
+def parse_jd(jd_text):    
     role_patterns = [
         r'Job\s+Title\s*[:\-]\s*(.+?)(?:\n|$)',
         r'Role\s*[:\-]\s*(.+?)(?:\n|$)', 
@@ -321,7 +275,6 @@ def parse_jd(jd_text):
             role = role_match.group(1).strip()
             break
     
-    # Extract required experience years - improved patterns
     exp_patterns = [
         r'(\d+)(?:\s*[-–—+to]\s*\d+)?\+?\s*years?\s*of\s*experience',
         r'(\d+)\+?\s*years?\s*(?:of\s*)?experience',
@@ -340,42 +293,31 @@ def parse_jd(jd_text):
             except ValueError:
                 continue
     
-    # Enhanced skills extraction from JD - fix fragmentation issue
     required_skills = set()
     
-    # Extract complete technology names using comprehensive patterns
     comprehensive_tech_patterns = [
-        # Complete framework/library names
         r'\b(scikit-learn|TensorFlow|PyTorch|Transformers|Hugging\s*Face)\b',
         r'\b(LangChain|LangGraph|FastAPI|Flask|Django|React|Angular|Vue\.js|Node\.js)\b',
         r'\b(Pandas|NumPy|Matplotlib|Seaborn|OpenCV|Pillow)\b',
-        # Cloud and DevOps
         r'\b(Amazon\s*Web\s*Services|AWS|Microsoft\s*Azure|Azure|Google\s*Cloud|GCP)\b',
         r'\b(Docker|Kubernetes|Jenkins|Git|GitHub|GitLab)\b',
-        # Databases and vector stores  
         r'\b(MySQL|PostgreSQL|MongoDB|Redis|Elasticsearch|Neo4j)\b',
         r'\b(FAISS|Pinecone|Weaviate|Vector\s*Database|vector\s*databases)\b',
-        # AI/ML specific
         r'\b(Machine\s*Learning|Deep\s*Learning|Natural\s*Language\s*Processing|NLP)\b',
         r'\b(Computer\s*Vision|Recommender\s*Systems|Classification\s*Models)\b',
         r'\b(BERT|SBERT|GPT|LLM|Large\s*Language\s*Models)\b',
         r'\b(Retrieval\s*Augmented\s*Generation|RAG)\b',
-        # Programming languages
         r'\b(Python|JavaScript|Java|C\+\+|SQL|R|Scala)\b',
-        # Tools
         r'\b(Jupyter|Git|Streamlit|Tableau|Power\s*BI)\b',
-        # Techniques
         r'\b(embeddings|text\s*similarity|resume\s*parsing)\b',
     ]
     
-    # Apply comprehensive patterns
     for pattern in comprehensive_tech_patterns:
         matches = re.findall(pattern, jd_text, re.IGNORECASE)
         for match in matches:
             if match.strip():
                 required_skills.add(match.strip())
     
-    # Look for Tech Stack section with better parsing
     tech_stack_patterns = [
         r'Tech\s+Stack\s*[:\n](.*?)(?=Requirements|What\s+You|$)',
         r'Technologies?\s*[:\n](.*?)(?=Requirements|What\s+You|$)',
@@ -387,27 +329,22 @@ def parse_jd(jd_text):
         if tech_match:
             tech_section = tech_match.group(1)
             
-            # Parse structured tech stack
             lines = tech_section.split('\n')
             for line in lines:
                 line = line.strip()
                 if not line or line.startswith('•'):
                     continue
                 
-                # Look for category patterns like "Languages: Python, SQL"
                 category_match = re.search(r'^[A-Za-z/\s]+:\s*(.+)', line)
                 if category_match:
                     items_text = category_match.group(1)
-                    # Split by commas but keep complete names
                     items = [item.strip() for item in re.split(r',(?![^()]*\))', items_text)]
                     for item in items:
                         if item and len(item) > 1 and len(item) < 50:
-                            # Clean parenthetical notes like "(for deployment)" or "(preferred)"
                             cleaned_item = re.sub(r'\s*\([^)]*\)', '', item).strip()
                             if cleaned_item:
                                 required_skills.add(cleaned_item)
     
-    # Extract from Requirements section with better parsing
     req_patterns = [
         r'Requirements?\s*[:\n](.*?)(?=\n[A-Z][a-z]+\s*[:|\n]|$)',
         r'(?:Must\s+Have|Required)\s*[:\n](.*?)(?=\n[A-Z][a-z]+\s*[:|\n]|$)',
@@ -418,80 +355,20 @@ def parse_jd(jd_text):
         if req_match:
             req_section = req_match.group(1)
             
-            # Extract complete technology mentions from requirements
             for tech_pattern in comprehensive_tech_patterns:
                 matches = re.findall(tech_pattern, req_section, re.IGNORECASE)
                 for match in matches:
                     if match.strip():
                         required_skills.add(match.strip())
     
-    # Clean and filter skills - remove incomplete fragments
     cleaned_skills = []
     for skill in required_skills:
         skill = skill.strip()
-        # Filter out incomplete words and generic terms
         if (skill and len(skill) > 2 and len(skill) < 50 and 
             not skill.lower() in ['strong', 'experience', 'familiarity', 'ability', 'prior', 'bonus', 'jds', 'mvp'] and
             not skill.endswith(')')):
             cleaned_skills.append(skill)
     
-    # Extract education requirements
-    education_patterns = [
-        r"(?:Bachelor'?s?|Master'?s?|PhD|Doctorate).*?(?:degree|in|of)\s*([^.\n,]+)",
-        r"\b(?:Bachelor|Master|PhD|Doctorate)\b.*?(?:degree|in|of)?\s*([^.\n,]+)"
-    ]
-    
-    required_education = ""
-    for pattern in education_patterns:
-        edu_match = re.search(pattern, jd_text, re.IGNORECASE)
-        if edu_match:
-            required_education = edu_match.group(0).strip()
-            break
-    
-    return {
-        'title': role,
-        'required_experience_years': required_experience_years,
-        'required_skills': cleaned_skills[:20],
-        'required_education': required_education
-    }
-    
-    
-    for pattern in req_patterns:
-        req_match = re.search(pattern, jd_text, re.DOTALL | re.IGNORECASE)
-        if req_match:
-            req_section = req_match.group(1)
-            
-            # Extract technology mentions from requirements
-            tech_mentions = re.findall(r'\b([A-Z][a-zA-Z]*(?:\.[a-zA-Z]+)?|[a-zA-Z]+/[a-zA-Z]+)\b', req_section)
-            required_skills.update([tech for tech in tech_mentions if len(tech) > 2])
-    
-    # Extract specific technology keywords throughout the JD
-    tech_keywords = [
-        'Python', 'SQL', 'JavaScript', 'Java', 'C++', 'R',
-        'TensorFlow', 'PyTorch', 'scikit-learn', 'Pandas', 'NumPy',
-        'Machine Learning', 'Deep Learning', 'NLP', 'AI', 'ML',
-        'BERT', 'GPT', 'Transformers', 'LLM', 'LangChain',
-        'Flask', 'FastAPI', 'Django', 'React', 'Node.js',
-        'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes',
-        'MySQL', 'PostgreSQL', 'MongoDB', 'Redis',
-        'Git', 'GitHub', 'CI/CD', 'Jenkins',
-        'Jupyter', 'Streamlit', 'Tableau',
-        'FAISS', 'Vector Database', 'RAG', 'Recommender Systems'
-    ]
-    
-    for keyword in tech_keywords:
-        if keyword.lower() in jd_text.lower():
-            required_skills.add(keyword)
-    
-    # Clean and filter skills
-    cleaned_skills = []
-    for skill in required_skills:
-        skill = skill.strip()
-        if (skill and len(skill) > 1 and len(skill) < 50 and 
-            not skill.lower() in ['strong', 'experience', 'familiarity', 'ability', 'prior', 'bonus']):
-            cleaned_skills.append(skill)
-    
-    # Extract education requirements
     education_patterns = [
         r"(?:Bachelor'?s?|Master'?s?|PhD|Doctorate).*?(?:degree|in|of)\s*([^.\n,]+)",
         r"\b(?:Bachelor|Master|PhD|Doctorate)\b.*?(?:degree|in|of)?\s*([^.\n,]+)"
@@ -511,21 +388,16 @@ def parse_jd(jd_text):
         'required_education': required_education
     }
 
-def calculate_skill_similarity(candidate_skill, required_skill):
-    """Enhanced skill similarity calculation"""
-    
+def calculate_skill_similarity(candidate_skill, required_skill):    
     candidate_lower = candidate_skill.lower().strip()
     required_lower = required_skill.lower().strip()
     
-    # Exact match
     if candidate_lower == required_lower:
         return 95
     
-    # Substring matches
     if candidate_lower in required_lower or required_lower in candidate_lower:
         return 85
     
-    # Semantic similarity using BERT embeddings
     try:
         emb1 = model.encode([candidate_skill])
         emb2 = model.encode([required_skill])
@@ -545,7 +417,6 @@ def calculate_skill_similarity(candidate_skill, required_skill):
             return semantic_similarity * 60
             
     except Exception:
-        # Fallback to keyword matching
         candidate_words = set(candidate_lower.split())
         required_words = set(required_lower.split())
         
@@ -561,10 +432,7 @@ def calculate_skill_similarity(candidate_skill, required_skill):
         jaccard_similarity = intersection / union
         return min(85, jaccard_similarity * 100)
 
-def calculate_scores(resume_data, jd_data):
-    """Enhanced scoring calculation"""
-    
-    # Experience Match
+def calculate_scores(resume_data, jd_data):    
     candidate_years = resume_data['experience_years']
     required_years = jd_data['required_experience_years']
     
@@ -588,7 +456,6 @@ def calculate_scores(resume_data, jd_data):
     else:
         experience_match = 80 if candidate_years > 0 else 30
     
-    # Skills Match
     if not jd_data['required_skills'] or not resume_data['skills']:
         skills_match = 0
     else:
@@ -601,20 +468,17 @@ def calculate_scores(resume_data, jd_data):
                 best_score = max(best_score, score)
             skill_scores.append(best_score)
         
-        # Calculate weighted average
         if skill_scores:
             skills_match = np.mean(skill_scores)
         else:
             skills_match = 0
     
-    # Education Match
     if not resume_data['education'] or not jd_data['required_education']:
         education_match = 70 if resume_data['education'] else 50
     else:
         candidate_edu = resume_data['education'].lower()
         required_edu = jd_data['required_education'].lower()
         
-        # Check degree levels
         has_bachelor = any(term in candidate_edu for term in ['bachelor', 'b.tech', 'b.sc', 'be'])
         has_master = any(term in candidate_edu for term in ['master', 'm.tech', 'm.sc', 'me'])
         has_phd = any(term in candidate_edu for term in ['phd', 'doctorate'])
@@ -634,7 +498,6 @@ def calculate_scores(resume_data, jd_data):
         else:
             education_match = 40
     
-    # Calculate overall score (Skills 50%, Experience 30%, Education 20%)
     overall_score = (skills_match * 0.5) + (experience_match * 0.3) + (education_match * 0.2)
     
     return {
@@ -670,14 +533,6 @@ def match():
                 'skills_match': scores['skills_match'], 
                 'education_match': scores['education_match'],
                 'overall_score': scores['overall_score']
-            },
-            'debug_info': {
-                'extracted_skills': resume_data['skills'][:15],
-                'extracted_years': resume_data['experience_years'],
-                'required_skills': jd_data['required_skills'][:15],
-                'required_years': jd_data['required_experience_years'],
-                'extracted_education': resume_data['education'][:200] if resume_data['education'] else "No education found",
-                'required_education': jd_data['required_education'][:200] if jd_data['required_education'] else "No education requirement found"
             }
         }
         return jsonify(response)
