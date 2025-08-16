@@ -4,590 +4,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Resume Matcher</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 32px 20px;
-            color: #2c3e50;
-            line-height: 1.6;
-        }
-
-        /* Royal gradient pattern */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(147, 51, 234, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(79, 70, 229, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
-            z-index: -1;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            animation: slideUp 0.6s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 24px;
-            padding: 40px 32px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
-
-        .header h1 {
-            color: #1f2937;
-            font-size: 2.25rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-        }
-
-        .header h1 i {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .header p {
-            color: #6b7280;
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-        }
-
-        .upload-section {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 24px;
-            padding: 40px;
-            margin-bottom: 32px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
-
-        .form-group {
-            margin-bottom: 28px;
-            position: relative;
-        }
-
-        .form-group label {
-            display: block;
-            color: #374151;
-            font-weight: 500;
-            margin-bottom: 12px;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-group label i {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .file-upload {
-            position: relative;
-            display: inline-block;
-            width: 100%;
-        }
-
-        .file-upload input[type="file"] {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        .file-upload-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            background: rgba(102, 126, 234, 0.02);
-            border: 2px dashed rgba(102, 126, 234, 0.3);
-            border-radius: 16px;
-            color: #6b7280;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .file-upload-btn:hover {
-            background: rgba(102, 126, 234, 0.05);
-            border-color: rgba(102, 126, 234, 0.5);
-            color: #374151;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
-        }
-
-        .file-upload-btn i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .file-selected {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-            border-color: #667eea;
-            color: #4c1d95;
-        }
-
-        .file-selected i {
-            color: #667eea;
-            background: none;
-            -webkit-text-fill-color: #667eea;
-        }
-
-        .document-preview {
-            margin-top: 20px;
-            display: none;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
-
-        .preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            gap: 16px;
-        }
-
-        .preview-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #4c1d95;
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .preview-title::before {
-            content: '📄';
-            font-size: 1.1rem;
-        }
-
-        .preview-close {
-            background: rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            color: #667eea;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 8px;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .preview-close:hover {
-            background: rgba(102, 126, 234, 0.15);
-            transform: translateY(-1px);
-        }
-
-        .preview-content {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(102, 126, 234, 0.1);
-            max-height: 250px;
-            overflow-y: auto;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: #374151;
-            white-space: pre-wrap;
-            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-        }
-
-        .preview-loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 30px;
-            color: #667eea;
-            font-weight: 500;
-        }
-
-        .preview-loading i {
-            animation: spin 1s linear infinite;
-            margin-right: 8px;
-        }
-
-        textarea {
-            width: 100%;
-            min-height: 160px;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(209, 213, 219, 0.5);
-            border-radius: 12px;
-            color: #374151;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            resize: vertical;
-            transition: all 0.2s ease;
-            font-family: inherit;
-        }
-
-        textarea::placeholder {
-            color: #9ca3af;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 18px 32px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 16px;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .submit-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .submit-btn:hover::before {
-            left: 100%;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
-        }
-
-        .submit-btn:active {
-            transform: translateY(-1px);
-        }
-
-        .submit-btn:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .submit-btn:disabled::before {
-            display: none;
-        }
-
-        .loading {
-            display: none;
-            margin-left: 10px;
-        }
-
-        .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 24px;
-            margin-top: 40px;
-        }
-
-        .feature {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 24px;
-            text-align: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
-
-        .feature:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 25px 50px rgba(102, 126, 234, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.2);
-        }
-
-        .feature i {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 2rem;
-            margin-bottom: 16px;
-            display: block;
-        }
-
-        .feature h3 {
-            color: #1f2937;
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .feature p {
-            color: #6b7280;
-            font-size: 0.875rem;
-            line-height: 1.5;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 10px;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .upload-section, .header {
-                margin-left: -10px;
-                margin-right: -10px;
-            }
-            
-            .features {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-brain"></i> AI Resume Matcher</h1>
-            <p>Intelligent resume analysis powered by AI</p>
+    <header class="header">
+        <div class="container">
+            <h1 class="header-title">
+                <i class="fas fa-brain"></i>
+                AI Resume Matcher
+            </h1>
+            <p class="header-subtitle">Intelligent resume analysis powered by AI</p>
         </div>
+    </header>
 
-        <div class="upload-section">
-            <form action="/result" method="post" enctype="multipart/form-data" id="matchForm">
-                <div class="form-group">
-                    <label for="resume">
-                        <i class="fas fa-file-user"></i> Upload Resume
-                    </label>
-                    <div class="file-upload">
-                        <input type="file" name="resume" id="resume" accept=".txt,.pdf,.docx" required>
-                        <div class="file-upload-btn" id="fileBtn">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <span>Choose resume file (PDF, DOCX, TXT)</span>
-                        </div>
-                    </div>
-                    <div class="document-preview" id="documentPreview">
-                        <div class="preview-header">
-                            <div class="preview-title" id="previewTitle">Document Preview</div>
-                            <button type="button" class="preview-close" onclick="closePreview()">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="preview-content" id="previewContent">
-                            <div class="preview-loading">
-                                <i class="fas fa-spinner"></i>
-                                Loading document...
+    <main class="main">
+        <div class="container">
+            <div class="upload-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-file-upload"></i>
+                        Upload Resume & Job Description
+                    </h2>
+                    <p class="card-description">
+                        Upload your resume and paste the job description to get an AI-powered match analysis
+                    </p>
+                </div>
+
+                <form action="/result" method="POST" enctype="multipart/form-data" class="upload-form">
+                    <div class="form-group">
+                        <label for="resume" class="form-label">
+                            <i class="fas fa-file-pdf"></i>
+                            Resume File
+                        </label>
+                        <div class="file-upload-wrapper">
+                            <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx,.txt" required class="file-input">
+                            <div class="file-upload-display">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span class="file-text">Choose resume file (PDF, DOC, DOCX, TXT)</span>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="jd">
-                        <i class="fas fa-briefcase"></i> Job Description
-                    </label>
-                    <textarea 
-                        name="jd" 
-                        id="jd" 
-                        placeholder="Paste the complete job description here...
+                    <div class="form-group">
+                        <label for="jd" class="form-label">
+                            <i class="fas fa-briefcase"></i>
+                            Job Description
+                        </label>
+                        <textarea 
+                            id="jd" 
+                            name="jd" 
+                            rows="12" 
+                            required 
+                            class="form-textarea"
+                            placeholder="Paste the complete job description here...
 
-Example:
-Role: Senior Software Engineer
+Example format:
+Role: Senior UI/UX Designer
 Required:
-• 5+ years experience in software development
-• Proficiency in React, Node.js, Python
-• Bachelor's degree in Computer Science or related field
-• Experience with cloud platforms (AWS/Azure)
-• Strong problem-solving and communication skills"
-                        required
-                    ></textarea>
+- 5+ years experience
+- Prototyping, Wireframing, Figma, Adobe XD
+- Bachelor's or Master's in Design or HCI"></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-search"></i>
+                        Analyze Match
+                    </button>
+                </form>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Smart Scoring</h3>
+                    <p>AI-powered analysis across skills, experience, and education</p>
                 </div>
-
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    <i class="fas fa-search"></i> Analyze Match
-                    <span class="loading">
-                        <div class="spinner"></div>
-                    </span>
-                </button>
-            </form>
-        </div>
-
-        <div class="features">
-            <div class="feature">
-                <i class="fas fa-robot"></i>
-                <h3>AI-Powered Analysis</h3>
-                <p>Advanced machine learning algorithms analyze your resume against job requirements</p>
-            </div>
-            <div class="feature">
-                <i class="fas fa-chart-pie"></i>
-                <h3>Detailed Scoring</h3>
-                <p>Get comprehensive scores for skills, experience, and education alignment</p>
-            </div>
-            <div class="feature">
-                <i class="fas fa-lightbulb"></i>
-                <h3>Smart Insights</h3>
-                <p>Receive actionable recommendations to improve your resume match</p>
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Instant Results</h3>
+                    <p>Get comprehensive match scores in seconds</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Secure & Private</h3>
+                    <p>Your documents are processed locally and securely</p>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 AI Resume Matcher. Powered by advanced NLP algorithms.</p>
+        </div>
+    </footer>
 
     <script>
-        // File upload and preview handler
-        document.getElementById('resume').addEventListener('change', function(e) {
-            const fileBtn = document.getElementById('fileBtn');
-            const preview = document.getElementById('documentPreview');
-            const previewContent = document.getElementById('previewContent');
-            const previewTitle = document.getElementById('previewTitle');
-            const file = e.target.files[0];
-            
-            if (file) {
-                fileBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${file.name}`;
-                fileBtn.classList.add('file-selected');
-                
-                // Show preview
-                preview.style.display = 'block';
-                previewTitle.textContent = `Preview: ${file.name}`;
-                previewContent.innerHTML = `
-                    <div class="preview-loading">
-                        <i class="fas fa-spinner"></i>
-                        Loading document...
-                    </div>
-                `;
-                
-                // Read file content
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    let content = '';
-                    
-                    if (file.type === 'text/plain') {
-                        content = event.target.result;
-                    } else if (file.type === 'application/pdf') {
-                        content = 'PDF content preview is not available. The file has been uploaded successfully and will be processed during analysis.';
-                    } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-                        content = 'DOCX content preview is not available. The file has been uploaded successfully and will be processed during analysis.';
-                    } else {
-                        content = 'File type not supported for preview, but will be processed during analysis.';
-                    }
-                    
-                    // Truncate content if too long
-                    if (content.length > 1000) {
-                        content = content.substring(0, 1000) + '\n\n... (content truncated for preview)';
-                    }
-                    
-                    previewContent.textContent = content;
-                };
-                
-                if (file.type === 'text/plain') {
-                    reader.readAsText(file);
-                } else {
-                    // For non-text files, show a message
-                    setTimeout(() => {
-                        let message = '';
-                        if (file.type === 'application/pdf') {
-                            message = `PDF document uploaded successfully.\n\nFilename: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\n\nThis PDF will be processed during analysis to extract text content for matching.`;
-                        } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-                            message = `Word document uploaded successfully.\n\nFilename: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\n\nThis DOCX file will be processed during analysis to extract text content for matching.`;
-                        } else {
-                            message = `Document uploaded successfully.\n\nFilename: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\n\nThis file will be processed during analysis.`;
-                        }
-                        previewContent.textContent = message;
-                    }, 500);
-                }
+        // File upload display functionality
+        const fileInput = document.getElementById('resume');
+        const fileText = document.querySelector('.file-text');
+        
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const fileName = e.target.files[0].name;
+                fileText.textContent = fileName;
+                fileText.parentElement.classList.add('file-selected');
             } else {
-                fileBtn.innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Choose resume file (PDF, DOCX, TXT)`;
-                fileBtn.classList.remove('file-selected');
-                preview.style.display = 'none';
+                fileText.textContent = 'Choose resume file (PDF, DOC, DOCX, TXT)';
+                fileText.parentElement.classList.remove('file-selected');
             }
         });
 
-        function closePreview() {
-            document.getElementById('documentPreview').style.display = 'none';
-        }
-
-        // Form submission handler
-        document.getElementById('matchForm').addEventListener('submit', function(e) {
-            const submitBtn = document.getElementById('submitBtn');
-            const loading = submitBtn.querySelector('.loading');
-            
+        // Form validation
+        document.querySelector('.upload-form').addEventListener('submit', function(e) {
+            const submitBtn = document.querySelector('.submit-btn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-cog fa-spin"></i> Processing Analysis... <span class="loading"><div class="spinner"></div></span>';
-            loading.style.display = 'inline-block';
         });
     </script>
 </body>

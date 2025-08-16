@@ -1,836 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Match Results - AI Resume Matcher</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 32px 20px;
-            color: #2c3e50;
-            line-height: 1.6;
-        }
-
-        /* Royal gradient pattern */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background:
-                radial-gradient(circle at 20% 80%, rgba(147, 51, 234, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(79, 70, 229, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
-            z-index: -1;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            animation: slideUp 0.6s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 24px;
-            padding: 32px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
-
-        .header h1 {
-            color: #1f2937;
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .header h1 i {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .header p {
-            color: #6b7280;
-            font-size: 1rem;
-            margin-bottom: 16px;
-        }
-
-        .candidate-info {
-            display: flex;
-            justify-content: center;
-            gap: 32px;
-            margin-top: 20px;
-        }
-
-        .info-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #374151;
-            font-size: 0.95rem;
-        }
-
-        .info-item i {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .overall-score {
-            text-align: center;
-            margin-bottom: 40px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
-
-        .score-circle {
-            width: 180px;
-            height: 180px;
-            margin: 0 auto 20px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .score-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #1f2937;
-        }
-
-        .score-label {
-            color: #6b7280;
-            font-size: 1rem;
-            font-weight: 500;
-            margin-top: 8px;
-        }
-
-        .circular-progress {
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            width: 200px;
-            height: 200px;
-        }
-
-        .progress-ring {
-            transform: rotate(-90deg);
-        }
-
-        .progress-ring-circle {
-            stroke: #f3f4f6;
-            stroke-width: 6;
-            fill: transparent;
-            r: 90;
-            cx: 100;
-            cy: 100;
-        }
-
-        .progress-ring-fill {
-            stroke: url(#royalGradient);
-            stroke-width: 6;
-            fill: transparent;
-            r: 90;
-            cx: 100;
-            cy: 100;
-            stroke-linecap: round;
-            transition: stroke-dashoffset 1.5s ease-in-out;
-        }
-
-        .detailed-scores {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .score-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 32px;
-            text-align: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .score-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .score-card:hover::before {
-            left: 100%;
-        }
-
-        .score-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 25px 50px rgba(102, 126, 234, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.2);
-        }
-
-        .score-icon {
-            font-size: 2.2rem;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .score-title {
-            color: #1f2937;
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin-bottom: 12px;
-        }
-
-        .score-percentage {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .score-percentage.medium {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .score-percentage.low {
-            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .score-bar {
-            width: 100%;
-            height: 6px;
-            background: #f3f4f6;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 12px;
-        }
-
-        .score-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border-radius: 4px;
-            transition: width 1.5s ease-in-out;
-            width: 0%;
-        }
-
-        .score-fill.medium {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        }
-
-        .score-fill.low {
-            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-        }
-
-        .score-description {
-            color: #6b7280;
-            font-size: 0.9rem;
-            line-height: 1.4;
-        }
-
-        .insights {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 32px;
-            margin-bottom: 32px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
-
-        .insights h3 {
-            color: #1f2937;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .insights h3 i {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .insight-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 14px;
-            color: #374151;
-            line-height: 1.5;
-        }
-
-        .insight-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .insight-item i {
-            margin-top: 2px;
-            color: #059669;
-            font-size: 0.9rem;
-        }
-
-        .insight-item.warning i {
-            color: #f59e0b;
-        }
-
-        .insight-item.danger i {
-            color: #dc2626;
-        }
-
-        .actions {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 32px;
-        }
-
-        .btn {
-            padding: 14px 24px;
-            border: none;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.9);
-            color: #667eea;
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            backdrop-filter: blur(10px);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 1);
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
-        }
-
-        /* Print styles for better report generation */
-        @media print {
-            body {
-                background: white;
-                padding: 20px;
-                font-size: 12pt;
-                line-height: 1.4;
-            }
-
-            body::before {
-                display: none;
-            }
-
-            .container {
-                max-width: none;
-                margin: 0;
-            }
-
-            .header {
-                background: white;
-                border: 1px solid #ccc;
-                box-shadow: none;
-                page-break-inside: avoid;
-            }
-
-            .overall-score {
-                background: white;
-                border: 1px solid #ccc;
-                box-shadow: none;
-                page-break-inside: avoid;
-            }
-
-            .detailed-scores {
-                display: block;
-                page-break-inside: avoid;
-            }
-
-            .score-card {
-                background: white;
-                border: 1px solid #ccc;
-                box-shadow: none;
-                margin-bottom: 20px;
-                page-break-inside: avoid;
-            }
-
-            .insights {
-                background: white;
-                border: 1px solid #ccc;
-                box-shadow: none;
-                page-break-inside: avoid;
-            }
-
-            .actions {
-                display: none;
-            }
-
-            .circular-progress {
-                display: none;
-            }
-
-            .score-circle {
-                border: 2px solid #667eea;
-                border-radius: 50%;
-            }
-
-            /* Add page header */
-            .header::before {
-                content: "Resume Match Analysis Report";
-                display: block;
-                text-align: center;
-                font-size: 18pt;
-                font-weight: bold;
-                margin-bottom: 10px;
-                color: #1f2937;
-            }
-
-            /* Add timestamp */
-            .header::after {
-                content: "Generated on " attr(data-timestamp);
-                display: block;
-                text-align: center;
-                font-size: 10pt;
-                color: #6b7280;
-                margin-top: 10px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .candidate-info {
-                flex-direction: column;
-                gap: 12px;
-                align-items: center;
-            }
-
-            .actions {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .detailed-scores {
-                grid-template-columns: 1fr;
-            }
-
-            .header,
-            .overall-score,
-            .insights {
-                margin-left: -10px;
-                margin-right: -10px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-
 <body>
-    <div class="container">
-        <div class="header" id="reportHeader">
-            <h1><i class="fas fa-chart-line"></i> Match Analysis Results</h1>
-            <p>AI-powered resume compatibility analysis</p>
-            <div class="candidate-info">
-                <div class="info-item">
-                    <i class="fas fa-user"></i>
-                    <span id="candidateName">{{ candidate_name }}</span>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-briefcase"></i>
-                    <span id="jobTitle">{{ job_title }}</span>
-                </div>
-            </div>
+    <header class="header">
+        <div class="container">
+            <h1 class="header-title">
+                <i class="fas fa-chart-bar"></i>
+                Match Results
+            </h1>
+            <p class="header-subtitle">AI-powered resume analysis complete</p>
         </div>
+    </header>
 
-        <div class="overall-score">
-            <div class="score-circle">
-                <svg class="circular-progress" width="200" height="200">
-                    <defs>
-                        <linearGradient id="royalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
-                        </linearGradient>
-                    </defs>
-                    <circle class="progress-ring-circle" />
-                    <circle class="progress-ring-fill" id="overallProgress" stroke-dasharray="565.49"
-                        stroke-dashoffset="565.49" />
-                </svg>
-                <div>
-                    <div class="score-value" id="overallScore">0%</div>
-                </div>
-            </div>
-            <div class="score-label">Overall Match Score</div>
-        </div>
-
-        <div class="detailed-scores">
+    <main class="main">
+        <div class="container">
+            <!-- Overall Score Card -->
             <div class="score-card">
-                <div class="score-icon">
-                    <i class="fas fa-cogs"></i>
+                <div class="score-header">
+                    <h2 class="candidate-name">
+                        <i class="fas fa-user"></i>
+                        {{ response.candidate_name }}
+                    </h2>
+                    <p class="job-title">
+                        <i class="fas fa-briefcase"></i>
+                        {{ response.job_title }}
+                    </p>
                 </div>
-                <div class="score-title">Skills Match</div>
-                <div class="score-percentage" id="skillsScore">{{ skills_match }}%</div>
-                <div class="score-bar">
-                    <div class="score-fill" id="skillsFill"></div>
-                </div>
-                <div class="score-description">
-                    Technical skills and competencies alignment with job requirements
+                
+                <div class="overall-score">
+                    <div class="score-circle">
+                        <div class="score-number">{{ response.match_scores.overall_score }}%</div>
+                        <div class="score-label">Overall Match</div>
+                    </div>
+                    <div class="score-status">
+                        {% if response.match_scores.overall_score >= 80 %}
+                            <i class="fas fa-check-circle status-excellent"></i>
+                            <span class="status-text status-excellent">Excellent Match</span>
+                        {% elif response.match_scores.overall_score >= 65 %}
+                            <i class="fas fa-thumbs-up status-good"></i>
+                            <span class="status-text status-good">Good Match</span>
+                        {% elif response.match_scores.overall_score >= 50 %}
+                            <i class="fas fa-exclamation-triangle status-fair"></i>
+                            <span class="status-text status-fair">Fair Match</span>
+                        {% else %}
+                            <i class="fas fa-times-circle status-poor"></i>
+                            <span class="status-text status-poor">Poor Match</span>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
-            <div class="score-card">
-                <div class="score-icon">
-                    <i class="fas fa-briefcase"></i>
+            <!-- Detailed Scores Grid -->
+            <div class="scores-grid">
+                <div class="score-item">
+                    <div class="score-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="score-content">
+                        <h3 class="score-title">Skills Match</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-width="{{ response.match_scores.skills_match }}"></div>
+                        </div>
+                        <div class="score-value">{{ response.match_scores.skills_match }}%</div>
+                        <p class="score-weight">Weight: 50%</p>
+                    </div>
                 </div>
-                <div class="score-title">Experience Match</div>
-                <div class="score-percentage" id="experienceScore">{{ experience_match }}%</div>
-                <div class="score-bar">
-                    <div class="score-fill" id="experienceFill"></div>
+
+                <div class="score-item">
+                    <div class="score-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="score-content">
+                        <h3 class="score-title">Experience Match</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-width="{{ response.match_scores.experience_match }}"></div>
+                        </div>
+                        <div class="score-value">{{ response.match_scores.experience_match }}%</div>
+                        <p class="score-weight">Weight: 30%</p>
+                    </div>
                 </div>
-                <div class="score-description">
-                    Years of experience and relevant role background
+
+                <div class="score-item">
+                    <div class="score-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="score-content">
+                        <h3 class="score-title">Education Match</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-width="{{ response.match_scores.education_match }}"></div>
+                        </div>
+                        <div class="score-value">{{ response.match_scores.education_match }}%</div>
+                        <p class="score-weight">Weight: 20%</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="score-card">
-                <div class="score-icon">
-                    <i class="fas fa-graduation-cap"></i>
+            <!-- Recommendations Section -->
+            <div class="recommendations-card">
+                <h3 class="recommendations-title">
+                    <i class="fas fa-lightbulb"></i>
+                    Recommendations
+                </h3>
+                <div class="recommendations-grid">
+                    {% if response.match_scores.skills_match < 70 %}
+                        <div class="recommendation-item">
+                            <i class="fas fa-tools"></i>
+                            <div class="recommendation-content">
+                                <h4>Enhance Technical Skills</h4>
+                                <p>Consider improving your technical skill set to better align with job requirements</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if response.match_scores.experience_match < 70 %}
+                        <div class="recommendation-item">
+                            <i class="fas fa-user-tie"></i>
+                            <div class="recommendation-content">
+                                <h4>Highlight Relevant Experience</h4>
+                                <p>Emphasize projects and roles that directly relate to this position</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if response.match_scores.education_match < 70 %}
+                        <div class="recommendation-item">
+                            <i class="fas fa-book"></i>
+                            <div class="recommendation-content">
+                                <h4>Consider Additional Certifications</h4>
+                                <p>Relevant certifications could strengthen your educational background</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if response.match_scores.overall_score >= 80 %}
+                        <div class="recommendation-item">
+                            <i class="fas fa-star"></i>
+                            <div class="recommendation-content">
+                                <h4>Excellent Candidate!</h4>
+                                <p>Your profile shows strong alignment with the job requirements</p>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
-                <div class="score-title">Education Match</div>
-                <div class="score-percentage" id="educationScore">{{ education_match }}%</div>
-                <div class="score-bar">
-                    <div class="score-fill" id="educationFill"></div>
-                </div>
-                <div class="score-description">
-                    Academic background and educational qualifications
-                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="/" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Analyze Another Resume
+                </a>
+                <button onclick="window.print()" class="btn btn-primary">
+                    <i class="fas fa-download"></i>
+                    Save Results
+                </button>
             </div>
         </div>
+    </main>
 
-        <div class="insights">
-            <h3><i class="fas fa-lightbulb"></i> Key Insights & Recommendations</h3>
-            <div id="insightsList">
-                <!-- Insights will be generated by JavaScript -->
-            </div>
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 AI Resume Matcher. Results generated using advanced semantic analysis.</p>
         </div>
-
-        <div class="actions">
-            <a href="/" class="btn btn-primary">
-                <i class="fas fa-plus"></i> New Analysis
-            </a>
-            <button onclick="generateReport()" class="btn btn-secondary">
-                <i class="fas fa-download"></i> Save Report
-            </button>
-        </div>
-    </div>
+    </footer>
 
     <script>
-        // Get scores from template variables or use demo data
-        const scores = {
-            overall: {{ overall_score }},
-        skills: { { skills_match } },
-        experience: { { experience_match } },
-        education: { { education_match } }
-        };
-
-        // For demo purposes when template variables aren't replaced
-        const demoScores = {
-            overall: 78,
-            skills: 85,
-            experience: 72,
-            education: 76
-        };
-
-        // Use actual scores if available, otherwise demo
-        const currentScores = (typeof scores.overall === 'number' && scores.overall > 0) ? scores : demoScores;
-
-        // Function to get score category and class
-        function getScoreCategory(score) {
-            if (score >= 80) return { category: 'high', class: '' };
-            if (score >= 60) return { category: 'medium', class: 'medium' };
-            return { category: 'low', class: 'low' };
-        }
-
-        // Function to animate circular progress
-        function animateCircularProgress(score) {
-            const circle = document.getElementById('overallProgress');
-            const circumference = 565.49; // 2 * Math.PI * 90
-            const offset = circumference - (score / 100) * circumference;
-
-            setTimeout(() => {
-                circle.style.strokeDashoffset = offset;
-            }, 500);
-        }
-
-        // Function to animate score bars
-        function animateScoreBars() {
-            const scoreData = [
-                { id: 'skillsFill', score: currentScores.skills },
-                { id: 'experienceFill', score: currentScores.experience },
-                { id: 'educationFill', score: currentScores.education }
-            ];
-
-            scoreData.forEach((item, index) => {
-                const fill = document.getElementById(item.id);
-                const scoreInfo = getScoreCategory(item.score);
-                if (scoreInfo.class) {
-                    fill.classList.add(scoreInfo.class);
-                }
-
+        // Animate progress bars on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressBars = document.querySelectorAll('.progress-fill');
+            
+            progressBars.forEach((bar, index) => {
+                const targetWidth = bar.getAttribute('data-width') + '%';
                 setTimeout(() => {
-                    fill.style.width = item.score + '%';
-                }, 800 + (index * 200));
+                    bar.style.transition = 'width 1s ease-in-out';
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = targetWidth;
+                    }, 100);
+                }, index * 200);
             });
-        }
-
-        // Function to animate overall score counter
-        function animateOverallScore() {
-            const scoreElement = document.getElementById('overallScore');
-            let current = 0;
-            const increment = currentScores.overall / 60;
-
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= currentScores.overall) {
-                    current = currentScores.overall;
-                    clearInterval(timer);
-                }
-                scoreElement.textContent = Math.round(current) + '%';
-            }, 25);
-        }
-
-        // Function to apply score colors
-        function applyScoreColors() {
-            const scoreElements = [
-                { id: 'skillsScore', score: currentScores.skills },
-                { id: 'experienceScore', score: currentScores.experience },
-                { id: 'educationScore', score: currentScores.education }
-            ];
-
-            scoreElements.forEach(item => {
-                const element = document.getElementById(item.id);
-                const scoreInfo = getScoreCategory(item.score);
-                if (scoreInfo.class) {
-                    element.classList.add(scoreInfo.class);
-                }
-            });
-        }
-
-        // Function to generate insights
-        function generateInsights() {
-            const insights = [];
-
-            // Overall score insights
-            if (currentScores.overall >= 85) {
-                insights.push({
-                    icon: 'fas fa-star',
-                    text: 'Excellent overall match! This candidate demonstrates strong alignment across all key areas and is highly recommended for the position.',
-                    type: 'success'
-                });
-            } else if (currentScores.overall >= 70) {
-                insights.push({
-                    icon: 'fas fa-thumbs-up',
-                    text: 'Good overall match with strong potential. This candidate shows solid alignment and should be considered for further evaluation.',
-                    type: 'success'
-                });
-            } else if (currentScores.overall >= 50) {
-                insights.push({
-                    icon: 'fas fa-exclamation-triangle',
-                    text: 'Moderate match with some gaps identified. Consider if additional training or role adjustments could bridge the differences.',
-                    type: 'warning'
-                });
-            } else {
-                insights.push({
-                    icon: 'fas fa-times-circle',
-                    text: 'Limited match identified. Significant gaps exist that may require substantial development or alternative role consideration.',
-                    type: 'danger'
-                });
-            }
-
-            // Skills-specific insights
-            if (currentScores.skills >= 85) {
-                insights.push({
-                    icon: 'fas fa-check-circle',
-                    text: 'Exceptional skills alignment. The candidate possesses the technical competencies needed to excel in this role.',
-                    type: 'success'
-                });
-            } else if (currentScores.skills >= 70) {
-                insights.push({
-                    icon: 'fas fa-tools',
-                    text: 'Good skills match with minor gaps. Consider targeted skill development in specific areas.',
-                    type: 'success'
-                });
-            } else if (currentScores.skills < 60) {
-                insights.push({
-                    icon: 'fas fa-wrench',
-                    text: 'Skills gap identified. Significant training or mentorship may be needed to bring candidate up to required level.',
-                    type: 'warning'
-                });
-            }
-
-            // Experience insights
-            if (currentScores.experience >= 90) {
-                insights.push({
-                    icon: 'fas fa-medal',
-                    text: 'Candidate significantly exceeds experience requirements and could potentially take on senior responsibilities.',
-                    type: 'success'
-                });
-            } else if (currentScores.experience >= 70) {
-                insights.push({
-                    icon: 'fas fa-clock',
-                    text: 'Experience level aligns well with role requirements. Candidate should be able to contribute effectively from day one.',
-                    type: 'success'
-                });
-            } else if (currentScores.experience < 50) {
-                insights.push({
-                    icon: 'fas fa-user-clock',
-                    text: 'Limited relevant experience. Consider junior role placement or extended onboarding and mentorship program.',
-                    type: 'warning'
-                });
-            }
-
-            // Education insights
-            if (currentScores.education >= 85) {
-                insights.push({
-                    icon: 'fas fa-graduation-cap',
-                    text: 'Educational background perfectly aligns with role requirements and demonstrates strong foundational knowledge.',
-                    type: 'success'
-                });
-            } else if (currentScores.education >= 60) {
-                insights.push({
-                    icon: 'fas fa-book-open',
-                    text: 'Educational background meets most requirements. Any gaps appear to be offset by practical experience.',
-                    type: 'success'
-                });
-            } else if (currentScores.education < 40) {
-                insights.push({
-                    icon: 'fas fa-book',
-                    text: 'Educational background differs from typical requirements, but practical skills and experience may compensate.',
-                    type: 'warning'
-                });
-            }
-
-            // Render insights
-            const insightsList = document.getElementById('insightsList');
-            insights.forEach(insight => {
-                const insightElement = document.createElement('div');
-                insightElement.className = `insight-item ${insight.type || ''}`;
-                insightElement.innerHTML = `
-                    <i class="${insight.icon}"></i>
-                    <span>${insight.text}</span>
-                `;
-                insightsList.appendChild(insightElement);
-            });
-        }
-
-        // Enhanced report generation with better formatting
-        function generateReport() {
-            // Add timestamp to header
-            const header = document.getElementById('reportHeader');
-            const now = new Date().toLocaleString();
-            header.setAttribute('data-timestamp', now);
-
-            // Create a temporary title for print
-            const originalTitle = document.title;
-            document.title = `Resume Match Analysis Report - ${now}`;
-
-            // Apply print styles and trigger print
-            window.print();
-
-            // Restore original title
-            document.title = originalTitle;
-        }
-
-        // Initialize all animations and data when page loads
-        function initializePage() {
-            applyScoreColors();
-            animateOverallScore();
-            animateCircularProgress(currentScores.overall);
-            animateScoreBars();
-            generateInsights();
-        }
-
-        // Start animations when page loads
-        window.addEventListener('load', () => {
-            setTimeout(initializePage, 300);
         });
+
+        // Animate score circle
+        const scoreNumber = document.querySelector('.score-number');
+        if (scoreNumber) {
+            const targetScore = parseInt(scoreNumber.textContent);
+            let currentScore = 0;
+            
+            const animateScore = () => {
+                if (currentScore < targetScore) {
+                    currentScore++;
+                    scoreNumber.textContent = currentScore + '%';
+                    requestAnimationFrame(animateScore);
+                }
+            };
+            
+            setTimeout(animateScore, 500);
+        }
     </script>
 </body>
-
 </html>
