@@ -507,6 +507,36 @@ def calculate_scores(resume_data, jd_data):
         'overall_score': round(overall_score)
     }
 
+@app.route('/contact', methods=['GET', 'POST'])
+def contact():
+    if request.method == 'POST':
+        name = request.form.get('name', '')
+        email = request.form.get('email', '')
+        message = request.form.get('message', '')
+        
+        if not name or not email or not message:
+            return "All fields are required!", 400
+
+        # For now, print message in console. Later can save to DB or send email
+        print(f"New contact from {name} ({email}): {message}")
+
+        return '''
+            <h2>Thank you {}! Your message has been received.</h2>
+            <a href="/contact">Go Back</a>
+        '''.format(name)
+
+    # GET request – show contact form
+    return '''
+        <h1>Contact Us</h1>
+        <form method="POST">
+            Name:<br><input type="text" name="name" required><br><br>
+            Email:<br><input type="email" name="email" required><br><br>
+            Message:<br><textarea name="message" rows="5" required></textarea><br><br>
+            <button type="submit">Send</button>
+        </form>
+        <br><a href="/">Back to Home</a>
+    '''
+
 @app.route('/match', methods=['POST'])
 def match():
     if 'resume' not in request.files:

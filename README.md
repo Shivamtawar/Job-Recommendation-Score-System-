@@ -30,6 +30,7 @@ AI Resume Matcher automatically analyzes resumes and provides intelligent matchi
 - **📁 Multiple Formats**: Supports PDF, DOCX, and TXT resume files
 - **⚡ Instant Results**: Get comprehensive analysis in seconds
 - **🔒 Privacy First**: All processing happens locally - your data never leaves the server
+- **📬 Contact & Feedback**: Users can submit queries or feedback via the contact page for better support.
 
 ## 🚀 Key Features
 
@@ -49,6 +50,14 @@ AI Resume Matcher automatically analyzes resumes and provides intelligent matchi
 2. **Paste Job Description**: Copy the job posting you're interested in
 3. **Get Instant Analysis**: Receive detailed match scores and insights
 4. **Review Results**: See breakdown by Experience, Skills, and Education
+
+## 📬 Contact / Feedback Page
+
+Users can visit `/contact` in the application to submit messages or queries.  
+- The form collects Name, Email, and Message.  
+- Messages are currently printed in the console (future updates can save to a database).  
+- Improves user engagement and allows for better support.
+
 
 ### Sample Results
 ```
@@ -118,8 +127,8 @@ The application uses a weighted scoring system:
 
 ```
 ai-resume-matcher/
-├── app.py                 # Main Flask application
-├── templates/             # HTML templates
+├── app.py                # Main Flask application with inline templates (index, result, contact)
+├── templates/            # HTML templates
 │   ├── index.html        # Upload interface
 │   └── result.html       # Results page
 ├── static/               # CSS and assets
@@ -127,7 +136,8 @@ ai-resume-matcher/
 ├── screenshots/          # Application screenshots
 ├── architecture/         # System diagrams
 ├── requirements.txt      # Python dependencies
-└── README.md            # This file
+└── README.md             # This file
+
 ```
 
 ## 🌐 API Usage
